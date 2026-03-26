@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cicloesanone Evaporation Test — Industrie Borla REV.1</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap');
+
+  :root {
+    --bg:        #0d0f12;
+    --bg2:       #141720;
+    --bg3:       #1c2028;
+    --border:    #2a2f3a;
+    --accent:    #e8a020;
+    --accent2:   #3ab0f0;
+    --danger:    #e84040;
+    --ok:        #40d080;
+    --text:      #c8cdd8;
+    --text-dim:  #606878;
+    --mono:      'Share Tech Mono', monospace;
+    --sans:      'Barlow Condensed', sans-serif;
+    --body:      'Barlow', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ───────────────────────────────────────── */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text-dim); font-weight: 300; }
+  .header-right {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+  #live-clock { color: var(--accent2); }
+
+  /* ── LAYOUT ───────────────────────────────────────── */
+  .app { display: flex; min-height: calc(100vh - 56px); }
+
+  /* sidebar */
+  .sidebar {
+    width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    flex-shrink: 0;
+  }
+  .sidebar-section {
+    font-family: var(--sans);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    padding: 12px 16px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    border-left: 2px solid transparent;
+    color: var(--text-dim);
+  }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(232,160,32,.07); }
+  .nav-item:hover:not(.active) { color: var(--text); background: rgba(255,255,255,.03); }
+  .nav-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .nav-item.active .nav-dot { background: var(--accent); }
+  .nav-item.done .nav-dot  { background: var(--ok); }
+  .nav-item.done { color: var(--ok); }
+
+  /* main */
+  .main { flex: 1; padding: 28px; overflow-y: auto; max-width: 1100px; }
+
+  /* ── PANELS ───────────────────────────────────────── */
+  .panel { display: none; animation: fadeIn .2s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+  .panel-title {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 26px;
+    letter-spacing: 1px;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .panel-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  /* ── CARDS ────────────────────────────────────────── */
+  .card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  /* ── INPUTS ───────────────────────────────────────── */
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+    font-family: var(--sans);
+  }
+  input[type=text], input[type=number], input[type=datetime-local], select, textarea {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent2); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .field { }
+
+  /* ── BUTTONS ──────────────────────────────────────── */
+  .btn {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: #111; }
+  .btn-primary:hover { background: #f0b030; }
+  .btn-secondary { background: transparent; color: var(--accent2); border: 1px solid var(--accent2); }
+  .btn-secondary:hover { background: rgba(58,176,240,.1); }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  .btn-danger:hover { background: rgba(232,64,64,.1); }
+  .btn-ok { background: var(--ok); color: #111; }
+  .btn-ok:hover { background: #50e090; }
+  .btn-sm { padding: 5px 12px; font-size: 11px; }
+  .btn + .btn { margin-left: 8px; }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+
+  /* ── BADGE ────────────────────────────────────────── */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-left: 6px;
+  }
+  .badge-acc  { background: rgba(232,160,32,.2); color: var(--accent); }
+  .badge-blue { background: rgba(58,176,240,.2); color: var(--accent2); }
+  .badge-ok   { background: rgba(64,208,128,.2); color: var(--ok); }
+  .badge-red  { background: rgba(232,64,64,.2);  color: var(--danger); }
+
+  /* ── TIMER ────────────────────────────────────────── */
+  .timer-display {
+    font-family: var(--mono);
+    font-size: 48px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-align: center;
+    padding: 12px 0;
+    text-shadow: 0 0 30px rgba(232,160,32,.4);
+  }
+  .timer-controls { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+
+  /* ── TABLE ────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    font-family: var(--sans);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid rgba(42,47,58,.6);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  .td-bold { color: #fff; font-weight: bold; }
+  .td-ok { color: var(--ok); }
+  .td-acc { color: var(--accent); }
+
+  /* ── PROGRESS ─────────────────────────────────────── */
+  .progress-bar-wrap {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width .4s ease;
+  }
+
+  /* ── GRID STATS ───────────────────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 22px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .stat-lbl { font-size: 10px; letter-spacing: 1px; color: var(--text-dim); font-family: var(--sans); text-transform: uppercase; }
+
+  /* ── CHART ────────────────────────────────────────── */
+  .chart-wrap { position: relative; height: 280px; }
+
+  /* ── PIECE LIST ───────────────────────────────────── */
+  .piece-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 10px;
+    margin: 4px;
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .piece-chip.selected { border-color: var(--accent); color: var(--accent); }
+  .piece-chip.completed { border-color: var(--ok); color: var(--ok); }
+
+  /* ── RECORDING ROW ────────────────────────────────── */
+  .rec-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(42,47,58,.5);
+  }
+  .rec-time {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent2);
+    min-width: 70px;
+  }
+  .rec-input { max-width: 130px; }
+  .rec-pct { font-family: var(--mono); font-size: 12px; color: var(--ok); min-width: 60px; }
+  .rec-status { font-size: 11px; color: var(--text-dim); }
+
+  /* ── INLINE ALERT ─────────────────────────────────── */
+  .alert {
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .alert-info  { background: rgba(58,176,240,.1); border: 1px solid rgba(58,176,240,.3); color: var(--accent2); }
+  .alert-warn  { background: rgba(232,160,32,.1); border: 1px solid rgba(232,160,32,.3); color: var(--accent); }
+  .alert-ok    { background: rgba(64,208,128,.1); border: 1px solid rgba(64,208,128,.3); color: var(--ok); }
+
+  /* ── REPORT ───────────────────────────────────────── */
+  .report-header {
+    border-top: 3px solid var(--accent);
+    padding-top: 16px;
+    margin-bottom: 20px;
+  }
+  .report-h1 {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .report-meta { font-size: 12px; color: var(--text-dim); font-family: var(--mono); margin-top: 6px; }
+
+  hr.sep { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* print */
+  @media print {
+    .sidebar, header, .btn, .timer-controls { display: none !important; }
+    .main { padding: 0; }
+    body { background: #fff; color: #000; }
+    .card { border: 1px solid #ccc; }
+    .panel { display: block !important; }
+    .panel:not(#panel-report) { display: none !important; }
+  }
+
+  .sep-v { display: inline-block; width: 1px; height: 14px; background: var(--border); margin: 0 8px; vertical-align: middle; }
+
+  .tag-stable {
+    display: inline-block;
+    background: rgba(232,64,64,.2);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 1px 6px;
+    margin-left: 6px;
+  }
+  .tag-stable.reached {
+    background: rgba(64,208,128,.2);
+    color: var(--ok);
+    border-color: var(--ok);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Industrie Borla <span>/ CHX Evaporation Test <span style="color:var(--accent);opacity:.6">REV.1</span></span></div>
+  <div class="header-right">
+    <div id="live-clock">--:--:--</div>
+    <div id="test-id-display" style="color:var(--text-dim)">Nessun test attivo</div>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Setup</div>
+    <div class="nav-item active" data-panel="panel-setup" id="nav-setup">
+      <div class="nav-dot"></div>Configurazione
+    </div>
+    <div class="nav-item" data-panel="panel-pieces" id="nav-pieces">
+      <div class="nav-dot"></div>Pezzi
+    </div>
+    <div class="sidebar-section" style="margin-top:8px">Esecuzione</div>
+    <div class="nav-item" data-panel="panel-record" id="nav-record">
+      <div class="nav-dot"></div>Rilevamento
+    </div>
+    <div class="sidebar-section" style="margin-top:8px">Analisi</div>
+    <div class="nav-item" data-panel="panel-results" id="nav-results">
+      <div class="nav-dot"></div>Risultati
+    </div>
+    <div class="nav-item" data-panel="panel-report" id="nav-report">
+      <div class="nav-dot"></div>Report
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ═══ PANEL SETUP ═══ -->
+    <div class="panel active" id="panel-setup">
+      <div class="panel-title">Configurazione Test</div>
+      <div class="panel-sub">Definisci i parametri generali dell'esperimento di evaporazione cicloesanone.</div>
+
+      <div class="card">
+        <div class="card-title">Identificazione Test</div>
+        <div class="field-row">
+          <div class="field">
+            <label>ID Test</label>
+            <input type="text" id="cfg-id" placeholder="es. CHX-2024-001">
+          </div>
+          <div class="field">
+            <label>Operatore</label>
+            <input type="text" id="cfg-op" placeholder="Nome operatore">
+          </div>
+          <div class="field">
+            <label>Data Test</label>
+            <input type="datetime-local" id="cfg-date">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Codice Articolo</label>
+            <input type="text" id="cfg-art" placeholder="es. ART-0042">
+          </div>
+          <div class="field">
+            <label>Materiale Pezzo A</label>
+            <input type="text" id="cfg-matA" placeholder="es. ABS">
+          </div>
+          <div class="field">
+            <label>Materiale Pezzo B</label>
+            <input type="text" id="cfg-matB" placeholder="es. ABS">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Condizioni Ambientali</div>
+        <div class="alert alert-info" style="margin-bottom:12px">
+          La quantità di cicloesanone applicata viene determinata automaticamente dalla differenza di peso:<br>
+          <strong>CHX (g) = Peso T=0 − (Peso A + Peso B)</strong>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Temperatura ambiente (°C)</label>
+            <input type="number" id="cfg-temp" placeholder="20" step="0.1">
+          </div>
+          <div class="field">
+            <label>Umidità relativa (%)</label>
+            <input type="number" id="cfg-hum" placeholder="50" step="1" min="0" max="100">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Tempo di Stabilità (Prodotto Finito)</div>
+        <div class="alert alert-info">
+          Inserire il tempo (in minuti) dopo il quale il giunto supera la specifica di trazione e il pezzo è considerato <strong>prodotto finito stabile</strong>. Questo sarà evidenziato in tutti i grafici e nel report.
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Tempo stabile (min)</label>
+            <input type="number" id="cfg-stable" placeholder="es. 15" step="0.5" min="0">
+          </div>
+          <div class="field">
+            <label>Specifica trazione (N)</label>
+            <input type="number" id="cfg-traction" placeholder="es. 50" step="1" min="0">
+          </div>
+          <div class="field">
+            <label>N° pezzi da testare</label>
+            <input type="number" id="cfg-npieces" placeholder="es. 3" step="1" min="1" max="20" value="3">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="grid-column: 1 / -1">
+            <label>Intervalli di rilevamento (min, separati da virgola)</label>
+            <input type="text" id="cfg-intervals" value="0,1,2,3,5,7,10,15,20,30">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Note</div>
+        <textarea id="cfg-notes" placeholder="Note aggiuntive sul test, condizioni particolari, lotto materiale, ecc."></textarea>
+      </div>
+
+      <button class="btn btn-primary" onclick="initTest()">▶ Inizializza Test</button>
+    </div>
+
+    <!-- ═══ PANEL PEZZI ═══ -->
+    <div class="panel" id="panel-pieces">
+      <div class="panel-title">Registrazione Pezzi</div>
+      <div class="panel-sub">Pesa ogni coppia pezzo A + pezzo B separatamente, poi dosa il cicloesanone e rileva il peso a T=0.</div>
+      <div id="pieces-container"></div>
+      <button class="btn btn-primary" onclick="goPanel('panel-record')" id="btn-start-record" disabled>▶ Avvia Rilevamento</button>
+    </div>
+
+    <!-- ═══ PANEL RECORD ═══ -->
+    <div class="panel" id="panel-record">
+      <div class="panel-title">Rilevamento Pesi</div>
+      <div class="panel-sub">Seleziona un pezzo, avvia il timer e registra il peso ai vari intervalli di tempo.</div>
+
+      <div style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; margin-bottom:16px">
+        <div style="flex:1; min-width:280px">
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title">Timer Globale</div>
+            <div class="timer-display" id="global-timer">00:00:00</div>
+            <div class="timer-controls">
+              <button class="btn btn-primary btn-sm" onclick="startGlobalTimer()" id="btn-gtstart">▶ Start</button>
+              <button class="btn btn-secondary btn-sm" onclick="resetGlobalTimer()">↺ Reset</button>
+            </div>
+          </div>
+        </div>
+        <div style="flex:2; min-width:280px">
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title">Selezione Pezzo</div>
+            <div id="piece-selector"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="active-piece-panel"></div>
+    </div>
+
+    <!-- ═══ PANEL RESULTS ═══ -->
+    <div class="panel" id="panel-results">
+      <div class="panel-title">Risultati & Analisi</div>
+      <div class="panel-sub">Media dei campioni, curva di evaporazione, percentuali ai tempi chiave.</div>
+
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div class="card">
+        <div class="card-title">Curva Evaporazione Media (%)</div>
+        <div class="chart-wrap">
+          <canvas id="evap-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Tabella Dati Medi</div>
+        <div style="overflow-x:auto">
+          <table id="avg-table">
+            <thead><tr>
+              <th>Tempo (min)</th>
+              <th>Peso Medio (g)</th>
+              <th>CHX Evap. Media (g)</th>
+              <th>% Evaporata</th>
+              <th>% Residua</th>
+              <th>Prodotto Finito</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Dettaglio per Campione</div>
+        <div id="detail-tabs" style="margin-bottom:12px"></div>
+        <div id="detail-table-wrap"></div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="buildResults()">↻ Aggiorna Analisi</button>
+    </div>
+
+    <!-- ═══ PANEL REPORT ═══ -->
+    <div class="panel" id="panel-report">
+      <div class="report-header">
+        <div class="report-h1" id="rpt-title">REPORT EVAPORAZIONE CICLOESANONE</div>
+        <div class="report-meta" id="rpt-meta"></div>
+      </div>
+
+      <div id="report-body"></div>
+
+      <div style="margin-top:24px; display:flex; gap:10px">
+        <button class="btn btn-primary" onclick="window.print()">🖨 Stampa / PDF</button>
+        <button class="btn btn-secondary" onclick="exportCSV()">⬇ Esporta CSV</button>
+        <button class="btn btn-secondary" onclick="exportJSON()">⬇ Esporta JSON</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+let state = {
+  cfg: {},
+  pieces: [],       // [{id, wA, wB, wSum, wT0, chxEff, readings:[{t,w}]}]
+  intervals: [],
+  globalStart: null,
+  globalTimerID: null,
+  globalRunning: false,
+  activePiece: 0,
+  chartInstance: null,
+};
+
+// ════════════════════════════════════════════════════════
+//  CLOCK
+// ════════════════════════════════════════════════════════
+setInterval(() => {
+  document.getElementById('live-clock').textContent =
+    new Date().toLocaleTimeString('it-IT');
+}, 500);
+
+// ════════════════════════════════════════════════════════
+//  NAV
+// ════════════════════════════════════════════════════════
+function goPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const nav = document.querySelector(`[data-panel="${id}"]`);
+  if (nav) nav.classList.add('active');
+  if (id === 'panel-results') buildResults();
+  if (id === 'panel-report') buildReport();
+}
+document.querySelectorAll('.nav-item').forEach(n => {
+  n.addEventListener('click', () => goPanel(n.dataset.panel));
+});
+
+// ════════════════════════════════════════════════════════
+//  INIT TEST
+// ════════════════════════════════════════════════════════
+function initTest() {
+  const n = parseInt(document.getElementById('cfg-npieces').value) || 3;
+  const intervals = document.getElementById('cfg-intervals').value
+    .split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+
+  state.cfg = {
+    id:       document.getElementById('cfg-id').value || 'CHX-TEST',
+    op:       document.getElementById('cfg-op').value || '-',
+    date:     document.getElementById('cfg-date').value || new Date().toISOString().slice(0,16),
+    art:      document.getElementById('cfg-art').value || '-',
+    matA:     document.getElementById('cfg-matA').value || '-',
+    matB:     document.getElementById('cfg-matB').value || '-',
+    temp:     parseFloat(document.getElementById('cfg-temp').value) || 20,
+    hum:      parseFloat(document.getElementById('cfg-hum').value) || 50,
+    stable:   parseFloat(document.getElementById('cfg-stable').value) || 15,
+    traction: parseFloat(document.getElementById('cfg-traction').value) || 0,
+    notes:    document.getElementById('cfg-notes').value,
+    nPieces:  n,
+  };
+  state.intervals = intervals;
+  state.pieces = Array.from({length: n}, (_, i) => ({
+    id: i+1,
+    label: `C${String(i+1).padStart(2,'0')}`,
+    wA: null, wB: null, wSum: null, wT0: null, chxEff: null,
+    readings: [],
+    stable_reached: false,
+  }));
+
+  document.getElementById('test-id-display').textContent = state.cfg.id;
+  buildPiecesSetup();
+  goPanel('panel-pieces');
+}
+
+// ════════════════════════════════════════════════════════
+//  PIECES SETUP
+// ════════════════════════════════════════════════════════
+function buildPiecesSetup() {
+  const c = document.getElementById('pieces-container');
+  c.innerHTML = '';
+  state.pieces.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.id = `pcard-${i}`;
+    div.innerHTML = `
+      <div class="card-title">Campione ${p.label}</div>
+      <div class="alert alert-info" style="margin-bottom:12px;font-size:12px">
+        Procedura: (1) Pesa A e B separati → (2) Unisci e dosa il cicloesanone → (3) Pesa subito il gruppo A+B+CHX come peso T=0
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>① Peso Pezzo A (g)</label>
+          <input type="number" step="0.001" id="wA-${i}" placeholder="0.000" oninput="calcPiece(${i})">
+        </div>
+        <div class="field">
+          <label>① Peso Pezzo B (g)</label>
+          <input type="number" step="0.001" id="wB-${i}" placeholder="0.000" oninput="calcPiece(${i})">
+        </div>
+        <div class="field">
+          <label>Somma A+B (g) — calcolata</label>
+          <input type="number" step="0.001" id="wSum-${i}" placeholder="—" readonly style="color:var(--accent2)">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>③ Peso T=0 dopo dosaggio CHX (g)</label>
+          <input type="number" step="0.001" id="wT0-${i}" placeholder="0.000" oninput="calcPiece(${i})">
+        </div>
+        <div class="field">
+          <label>CHX applicato (g) = T0 − (A+B)</label>
+          <input type="number" step="0.001" id="chxCalc-${i}" placeholder="—" readonly
+            style="color:var(--accent);font-size:16px;font-weight:bold">
+        </div>
+      </div>
+      <div id="piece-alert-${i}" style="margin-top:8px"></div>
+    `;
+    c.appendChild(div);
+  });
+}
+
+function calcPiece(i) {
+  const wA  = parseFloat(document.getElementById(`wA-${i}`)?.value);
+  const wB  = parseFloat(document.getElementById(`wB-${i}`)?.value);
+  const wT0 = parseFloat(document.getElementById(`wT0-${i}`)?.value);
+
+  const wSum = (!isNaN(wA) && !isNaN(wB)) ? wA + wB : null;
+  const sumEl = document.getElementById(`wSum-${i}`);
+  if (sumEl) sumEl.value = wSum !== null ? wSum.toFixed(3) : '';
+
+  // CHX è SEMPRE ricavato dalla pesata: T0 - (A+B)
+  const chxCalc = (wSum !== null && !isNaN(wT0)) ? wT0 - wSum : null;
+  const chxEl = document.getElementById(`chxCalc-${i}`);
+  if (chxEl) chxEl.value = chxCalc !== null ? chxCalc.toFixed(3) : '';
+
+  const alertDiv = document.getElementById(`piece-alert-${i}`);
+  if (chxCalc !== null) {
+    if (chxCalc <= 0) {
+      alertDiv.innerHTML = `<div class="alert alert-warn">⚠ Peso T=0 inferiore o uguale alla somma A+B — verificare i valori inseriti.</div>`;
+    } else {
+      alertDiv.innerHTML = `<div class="alert alert-ok">✓ Cicloesanone applicato rilevato: <strong>${chxCalc.toFixed(3)} g</strong></div>`;
+    }
+  } else {
+    alertDiv.innerHTML = '';
+  }
+
+  // Salva nello state
+  state.pieces[i].wA    = !isNaN(wA)  ? wA  : null;
+  state.pieces[i].wB    = !isNaN(wB)  ? wB  : null;
+  state.pieces[i].wSum  = wSum;
+  state.pieces[i].wT0   = !isNaN(wT0) ? wT0 : null;
+  state.pieces[i].chxEff = (chxCalc !== null && chxCalc > 0) ? chxCalc : null;
+
+  // Abilita il tasto avvia solo se tutti i campioni hanno wT0 e chxEff valido
+  const allReady = state.pieces.every(p => p.wT0 !== null && p.chxEff !== null && p.chxEff > 0);
+  document.getElementById('btn-start-record').disabled = !allReady;
+}
+
+// ════════════════════════════════════════════════════════
+//  GLOBAL TIMER
+// ════════════════════════════════════════════════════════
+function startGlobalTimer() {
+  if (state.globalRunning) return;
+  state.globalStart = Date.now() - (state.globalElapsed || 0);
+  state.globalRunning = true;
+  document.getElementById('btn-gtstart').disabled = true;
+  state.globalTimerID = setInterval(() => {
+    const ms = Date.now() - state.globalStart;
+    state.globalElapsed = ms;
+    const h = Math.floor(ms/3600000);
+    const m = Math.floor((ms%3600000)/60000);
+    const s = Math.floor((ms%60000)/1000);
+    document.getElementById('global-timer').textContent =
+      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }, 500);
+}
+
+function resetGlobalTimer() {
+  clearInterval(state.globalTimerID);
+  state.globalRunning = false;
+  state.globalElapsed = 0;
+  state.globalStart = null;
+  document.getElementById('global-timer').textContent = '00:00:00';
+  document.getElementById('btn-gtstart').disabled = false;
+}
+
+function getElapsedMin() {
+  if (!state.globalStart) return 0;
+  return (Date.now() - state.globalStart) / 60000;
+}
+
+// ════════════════════════════════════════════════════════
+//  RECORDING PANEL
+// ════════════════════════════════════════════════════════
+function buildRecordPanel() {
+  // Piece selector
+  const sel = document.getElementById('piece-selector');
+  sel.innerHTML = state.pieces.map((p,i) => {
+    const cls = i === state.activePiece ? 'selected' : (p.readings.length > 0 ? 'completed' : '');
+    return `<div class="piece-chip ${cls}" onclick="setActivePiece(${i})">
+      ${p.label}
+      ${p.readings.length > 0 ? `<span class="badge badge-ok">${p.readings.length}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  // Active piece
+  const p = state.pieces[state.activePiece];
+  const chx = p.chxEff || 0;
+  const panel = document.getElementById('active-piece-panel');
+
+  panel.innerHTML = `
+    <div class="card">
+      <div class="card-title">Campione ${p.label} — Rilevamento</div>
+      <div class="stats-grid" style="margin-bottom:12px">
+        <div class="stat-box">
+          <div class="stat-val">${(p.wT0||0).toFixed(3)}</div>
+          <div class="stat-lbl">Peso T=0 (g)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">${chx.toFixed(3)}</div>
+          <div class="stat-lbl">CHX Iniziale (g)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="cur-weight-${state.activePiece}">—</div>
+          <div class="stat-lbl">Peso Attuale (g)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="cur-evap-${state.activePiece}">—</div>
+          <div class="stat-lbl">CHX Evap. (%)</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label>Intervalli programmati</label>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text-dim)">
+          ${state.intervals.map(t => {
+            const done = p.readings.some(r => r.t === t);
+            const isStable = t >= state.cfg.stable;
+            return `<span style="
+              display:inline-block; margin:2px 4px;
+              padding:2px 8px; border-radius:3px;
+              background: ${done ? 'rgba(64,208,128,.15)' : 'var(--bg)'};
+              border: 1px solid ${done ? 'var(--ok)' : (isStable ? 'rgba(232,64,64,.4)' : 'var(--border)')};
+              color: ${done ? 'var(--ok)' : (isStable ? 'var(--danger)' : 'var(--text-dim)')};
+            ">${t}′${isStable ? '⚑' : ''}</span>`;
+          }).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">⚑ = dopo tempo stabile (${state.cfg.stable} min)</div>
+      </div>
+
+      <div id="rec-rows-${state.activePiece}">
+        ${buildRecRows(state.activePiece)}
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap">
+        <div style="flex:1; min-width:200px">
+          <label>Tempo manuale (min)</label>
+          <input type="number" step="0.1" id="manual-time" placeholder="es. 12.5">
+        </div>
+        <div style="flex:1; min-width:200px">
+          <label>Peso (g)</label>
+          <input type="number" step="0.001" id="manual-weight" placeholder="0.000">
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-secondary btn-sm" onclick="addManualReading()">+ Aggiungi</button>
+          <button class="btn btn-ok btn-sm" onclick="captureNow()">⊕ Cattura Ora</button>
+        </div>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:var(--text-dim)">
+        "Cattura Ora" usa il tempo dal timer globale. Inserisci il peso e premi il tasto.
+      </div>
+    </div>
+  `;
+}
+
+function buildRecRows(pi) {
+  const p = state.pieces[pi];
+  const chx = p.chxEff || 0;
+
+  if (p.readings.length === 0) return '<div style="color:var(--text-dim);font-size:12px;font-family:var(--mono)">Nessuna lettura ancora.</div>';
+
+  return `<table>
+    <thead><tr>
+      <th>T (min)</th>
+      <th>Peso (g)</th>
+      <th>CHX Evap (g)</th>
+      <th>% Evap</th>
+      <th>% Residua</th>
+      <th>Prod. Finito</th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+    ${p.readings.sort((a,b)=>a.t-b.t).map((r,ri) => {
+      const evapG = p.wT0 - r.w;
+      const pct = chx > 0 ? (evapG/chx*100) : 0;
+      const res = 100 - pct;
+      const stable = r.t >= state.cfg.stable;
+      return `<tr>
+        <td class="td-acc">${r.t.toFixed(1)}′ ${stable ? '<span class="tag-stable reached">PF</span>' : ''}</td>
+        <td class="td-bold">${r.w.toFixed(3)}</td>
+        <td>${evapG.toFixed(3)}</td>
+        <td class="td-ok">${pct.toFixed(1)}%</td>
+        <td>${res.toFixed(1)}%</td>
+        <td>${stable ? '<span style="color:var(--ok)">✓ Sì</span>' : '<span style="color:var(--text-dim)">No</span>'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteReading(${pi},${ri})">✕</button></td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function setActivePiece(i) {
+  state.activePiece = i;
+  buildRecordPanel();
+}
+
+function captureNow() {
+  const t = getElapsedMin();
+  const wInput = document.getElementById('manual-weight');
+  const w = parseFloat(wInput.value);
+  if (isNaN(w)) { alert('Inserisci il peso!'); return; }
+  addReading(state.activePiece, parseFloat(t.toFixed(2)), w);
+  wInput.value = '';
+}
+
+function addManualReading() {
+  const t = parseFloat(document.getElementById('manual-time').value);
+  const w = parseFloat(document.getElementById('manual-weight').value);
+  if (isNaN(t) || isNaN(w)) { alert('Inserisci tempo e peso!'); return; }
+  addReading(state.activePiece, t, w);
+  document.getElementById('manual-time').value = '';
+  document.getElementById('manual-weight').value = '';
+}
+
+function addReading(pi, t, w) {
+  const p = state.pieces[pi];
+  p.readings.push({t, w});
+  updateCurStats(pi);
+  buildRecordPanel();
+}
+
+function deleteReading(pi, ri) {
+  state.pieces[pi].readings.splice(ri, 1);
+  buildRecordPanel();
+}
+
+function updateCurStats(pi) {
+  const p = state.pieces[pi];
+  const chx = p.chxEff || 0;
+  if (p.readings.length === 0) return;
+  const last = p.readings[p.readings.length - 1];
+  const evapG = p.wT0 - last.w;
+  const pct = chx > 0 ? (evapG/chx*100) : 0;
+  const curW = document.getElementById(`cur-weight-${pi}`);
+  const curE = document.getElementById(`cur-evap-${pi}`);
+  if (curW) curW.textContent = last.w.toFixed(3);
+  if (curE) curE.textContent = pct.toFixed(1) + '%';
+}
+
+// Navigate to record panel
+document.querySelector('[data-panel="panel-record"]').addEventListener('click', () => {
+  setTimeout(buildRecordPanel, 50);
+});
+
+// ════════════════════════════════════════════════════════
+//  RESULTS
+// ════════════════════════════════════════════════════════
+function buildResults() {
+  const pieces = state.pieces.filter(p => p.readings.length > 0);
+  if (pieces.length === 0) {
+    document.getElementById('stats-grid').innerHTML = '<div class="alert alert-warn">Nessun dato rilevato ancora.</div>';
+    return;
+  }
+
+  // Collect all time points across all pieces
+  const allTimes = [...new Set(pieces.flatMap(p => p.readings.map(r => r.t)))].sort((a,b) => a-b);
+
+  // Compute avg for each time
+  const avgData = allTimes.map(t => {
+    const rows = pieces.map(p => {
+      const r = p.readings.find(r2 => r2.t === t);
+      if (!r) return null;
+      const chx = p.chxEff || 0;
+      const evapG = p.wT0 - r.w;
+      const pct = chx > 0 ? evapG/chx*100 : 0;
+      return {w: r.w, evapG, pct, res: 100-pct};
+    }).filter(Boolean);
+    if (rows.length === 0) return null;
+    return {
+      t,
+      wAvg: avg(rows.map(r=>r.w)),
+      evapGAvg: avg(rows.map(r=>r.evapG)),
+      pctAvg: avg(rows.map(r=>r.pct)),
+      resAvg: avg(rows.map(r=>r.res)),
+      n: rows.length,
+    };
+  }).filter(Boolean);
+
+  // Stats
+  const lastRow = avgData[avgData.length-1];
+  const stableRow = avgData.find(r => r.t >= state.cfg.stable);
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = `
+    <div class="stat-box"><div class="stat-val">${pieces.length}</div><div class="stat-lbl">Campioni</div></div>
+    <div class="stat-box"><div class="stat-val">${allTimes.length}</div><div class="stat-lbl">Rilevamenti</div></div>
+    <div class="stat-box"><div class="stat-val">${lastRow ? lastRow.pctAvg.toFixed(1)+'%' : '—'}</div><div class="stat-lbl">CHX Evap. Finale</div></div>
+    <div class="stat-box"><div class="stat-val">${stableRow ? stableRow.pctAvg.toFixed(1)+'%' : '—'}</div><div class="stat-lbl">CHX Evap. @ Stabile (${state.cfg.stable}′)</div></div>
+    <div class="stat-box"><div class="stat-val">${stableRow ? stableRow.resAvg.toFixed(1)+'%' : '—'}</div><div class="stat-lbl">CHX Residuo @ Stabile</div></div>
+  `;
+
+  // Table
+  const tbody = document.querySelector('#avg-table tbody');
+  tbody.innerHTML = avgData.map(r => {
+    const isStable = r.t >= state.cfg.stable;
+    return `<tr ${isStable ? 'style="background:rgba(64,208,128,.05)"' : ''}>
+      <td class="td-acc">${r.t.toFixed(1)} ${isStable ? '<span class="tag-stable reached">PF</span>':''}</td>
+      <td class="td-bold">${r.wAvg.toFixed(3)}</td>
+      <td>${r.evapGAvg.toFixed(3)}</td>
+      <td class="td-ok">${r.pctAvg.toFixed(1)}%</td>
+      <td>${r.resAvg.toFixed(1)}%</td>
+      <td>${isStable ? '<span style="color:var(--ok)">✓ Sì</span>' : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Detail tabs
+  const tabsDiv = document.getElementById('detail-tabs');
+  tabsDiv.innerHTML = pieces.map((p,i) => 
+    `<button class="btn btn-secondary btn-sm" onclick="showDetailTable(${state.pieces.indexOf(p)})" style="margin:2px">${p.label}</button>`
+  ).join('');
+  showDetailTable(state.pieces.indexOf(pieces[0]));
+
+  // Chart
+  buildChart(avgData);
+}
+
+function showDetailTable(pi) {
+  const p = state.pieces[pi];
+  const chx = p.chxEff || 0;
+  const wrap = document.getElementById('detail-table-wrap');
+  if (!p || p.readings.length === 0) { wrap.innerHTML = '<div style="color:var(--text-dim)">Nessun dato.</div>'; return; }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>T (min)</th><th>Peso (g)</th><th>CHX Evap (g)</th><th>% Evap</th><th>% Residua</th><th>PF</th></tr></thead>
+    <tbody>
+    ${p.readings.sort((a,b)=>a.t-b.t).map(r => {
+      const evapG = p.wT0 - r.w;
+      const pct = chx > 0 ? evapG/chx*100 : 0;
+      const stable = r.t >= state.cfg.stable;
+      return `<tr ${stable?'style="background:rgba(64,208,128,.05)"':''}>
+        <td class="td-acc">${r.t.toFixed(1)}′ ${stable?'<span class="tag-stable reached">PF</span>':''}</td>
+        <td class="td-bold">${r.w.toFixed(3)}</td>
+        <td>${evapG.toFixed(3)}</td>
+        <td class="td-ok">${pct.toFixed(1)}%</td>
+        <td>${(100-pct).toFixed(1)}%</td>
+        <td>${stable?'<span style="color:var(--ok)">✓</span>':'—'}</td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function buildChart(avgData) {
+  const ctx = document.getElementById('evap-chart').getContext('2d');
+  if (state.chartInstance) state.chartInstance.destroy();
+
+  const stableX = state.cfg.stable;
+  const labels = avgData.map(r => r.t.toFixed(1));
+  const pcts   = avgData.map(r => r.pctAvg);
+  const res    = avgData.map(r => r.resAvg);
+
+  state.chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '% CHX Evaporata',
+          data: pcts,
+          borderColor: '#40d080',
+          backgroundColor: 'rgba(64,208,128,.1)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: pcts.map((_, i) => avgData[i].t >= stableX ? '#40d080' : '#e8a020'),
+          pointRadius: 5,
+        },
+        {
+          label: '% CHX Residua',
+          data: res,
+          borderColor: '#e8a020',
+          backgroundColor: 'transparent',
+          tension: 0.4,
+          borderDash: [4, 4],
+          pointRadius: 3,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#c8cdd8', font: { family: 'Share Tech Mono', size: 11 } } },
+        annotation: {},
+        tooltip: {
+          callbacks: {
+            title: items => `T = ${items[0].label}′`,
+            footer: items => {
+              const t = avgData[items[0].dataIndex]?.t;
+              return t >= stableX ? '★ Prodotto Finito' : '';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Tempo (min)', color: '#606878' },
+          ticks: { color: '#606878', font: { family: 'Share Tech Mono', size: 11 } },
+          grid: { color: 'rgba(42,47,58,.8)' }
+        },
+        y: {
+          title: { display: true, text: '%', color: '#606878' },
+          ticks: { color: '#606878', font: { family: 'Share Tech Mono', size: 11 } },
+          grid: { color: 'rgba(42,47,58,.8)' },
+          min: 0, max: 105
+        }
+      }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  REPORT
+// ════════════════════════════════════════════════════════
+function buildReport() {
+  const c = state.cfg;
+  document.getElementById('rpt-title').textContent = `REPORT EVAPORAZIONE CICLOESANONE — ${c.id}`;
+  document.getElementById('rpt-meta').textContent =
+    `Operatore: ${c.op}  |  Data: ${c.date}  |  Art: ${c.art}  |  Materiali: ${c.matA} / ${c.matB}  |  Temp: ${c.temp}°C  |  UR: ${c.hum}%`;
+
+  const pieces = state.pieces.filter(p => p.readings.length > 0);
+  const allTimes = [...new Set(pieces.flatMap(p => p.readings.map(r => r.t)))].sort((a,b)=>a-b);
+  const avgData = allTimes.map(t => {
+    const rows = pieces.map(p => {
+      const r = p.readings.find(r2 => r2.t === t);
+      if (!r) return null;
+      const chx = p.chxEff || 0;
+      const evapG = p.wT0 - r.w;
+      const pct = chx > 0 ? evapG/chx*100 : 0;
+      return {evapG, pct};
+    }).filter(Boolean);
+    if (!rows.length) return null;
+    return {t, pctAvg: avg(rows.map(r=>r.pct)), evapGAvg: avg(rows.map(r=>r.evapG)), n: rows.length};
+  }).filter(Boolean);
+
+  const stableRow = avgData.find(r => r.t >= c.stable);
+  // CHX medio applicato su tutti i campioni
+  const chxMedio = pieces.length > 0 ? avg(pieces.map(p => p.chxEff || 0)) : 0;
+
+  let html = `
+    <div class="card">
+      <div class="card-title">Parametri Test</div>
+      <table>
+        <tbody>
+          <tr><td style="color:var(--text-dim);width:260px">CHX applicato medio sui campioni</td><td class="td-bold">${chxMedio.toFixed(3)} g</td></tr>
+          <tr><td style="color:var(--text-dim)">Metodo determinazione CHX</td><td class="td-bold">Gravimetrico: W(T=0) − [W(A)+W(B)]</td></tr>
+          <tr><td style="color:var(--text-dim)">Tempo stabile (PF)</td><td class="td-bold">${c.stable} min</td></tr>
+          <tr><td style="color:var(--text-dim)">Specifica trazione</td><td class="td-bold">${c.traction} N</td></tr>
+          <tr><td style="color:var(--text-dim)">N° campioni</td><td class="td-bold">${pieces.length}</td></tr>
+          <tr><td style="color:var(--text-dim)">Temperatura</td><td class="td-bold">${c.temp} °C</td></tr>
+          <tr><td style="color:var(--text-dim)">Umidità relativa</td><td class="td-bold">${c.hum} %</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Riepilogo Campioni</div>
+      <table>
+        <thead><tr><th>Campione</th><th>W(A) (g)</th><th>W(B) (g)</th><th>W(A+B) (g)</th><th>W T=0 (g)</th><th>CHX = T0−(A+B) (g)</th><th>N Letture</th></tr></thead>
+        <tbody>
+          ${pieces.map(p => `<tr>
+            <td>${p.label}</td>
+            <td>${p.wA?.toFixed(3)||'—'}</td>
+            <td>${p.wB?.toFixed(3)||'—'}</td>
+            <td>${p.wSum?.toFixed(3)||'—'}</td>
+            <td>${p.wT0?.toFixed(3)||'—'}</td>
+            <td class="td-acc">${(p.chxEff||0).toFixed(3)}</td>
+            <td>${p.readings.length}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Risultato Chiave — Evaporazione al Tempo Stabile</div>
+      ${stableRow ? `
+        <div class="alert alert-ok">
+          Al tempo <strong>T = ${stableRow.t.toFixed(1)} min</strong> (tempo stabile definito: ${c.stable} min):
+          il <strong>${stableRow.pctAvg.toFixed(1)}%</strong> del cicloesanone è evaporato
+          (${stableRow.evapGAvg.toFixed(3)} g in media).
+          Residuo: <strong>${(100-stableRow.pctAvg).toFixed(1)}%</strong>.
+        </div>
+      ` : `<div class="alert alert-warn">Nessuna lettura al o dopo il tempo stabile (${c.stable} min).</div>`}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tabella Dati Medi</div>
+      <table>
+        <thead><tr><th>T (min)</th><th>CHX Evap. Media (g)</th><th>% Evaporata</th><th>% Residua</th><th>PF</th><th>N campioni</th></tr></thead>
+        <tbody>
+          ${avgData.map(r => {
+            const isStable = r.t >= c.stable;
+            return `<tr ${isStable?'style="background:rgba(64,208,128,.05)"':''}>
+              <td>${r.t.toFixed(1)}′ ${isStable?'<span class="tag-stable reached">PF</span>':''}</td>
+              <td>${r.evapGAvg.toFixed(3)}</td>
+              <td class="td-ok">${r.pctAvg.toFixed(1)}%</td>
+              <td>${(100-r.pctAvg).toFixed(1)}%</td>
+              <td>${isStable?'✓':''}</td>
+              <td>${r.n}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    ${c.notes ? `<div class="card"><div class="card-title">Note</div><div style="font-size:13px;line-height:1.6">${c.notes}</div></div>` : ''}
+  `;
+
+  document.getElementById('report-body').innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════
+//  EXPORT
+// ════════════════════════════════════════════════════════
+function exportCSV() {
+  let csv = 'Campione,WA_g,WB_g,WSum_g,CHX_g,WT0_g,T_min,Peso_g,CHX_Evap_g,Pct_Evap,Pct_Residua,PF\n';
+  state.pieces.filter(p=>p.readings.length>0).forEach(p => {
+    const chx = p.chxEff || 0;
+    p.readings.sort((a,b)=>a.t-b.t).forEach(r => {
+      const evapG = p.wT0 - r.w;
+      const pct = chx > 0 ? evapG/chx*100 : 0;
+      const stable = r.t >= state.cfg.stable ? 'SI' : 'NO';
+      csv += `${p.label},${(p.wA||0).toFixed(3)},${(p.wB||0).toFixed(3)},${(p.wSum||0).toFixed(3)},${chx.toFixed(3)},${(p.wT0||0).toFixed(3)},${r.t.toFixed(2)},${r.w.toFixed(3)},${evapG.toFixed(3)},${pct.toFixed(2)},${(100-pct).toFixed(2)},${stable}\n`;
+    });
+  });
+  download(`${state.cfg.id}_dati.csv`, csv, 'text/csv');
+}
+
+function exportJSON() {
+  const data = { config: state.cfg, intervals: state.intervals, pieces: state.pieces };
+  download(`${state.cfg.id}_dati.json`, JSON.stringify(data, null, 2), 'application/json');
+}
+
+function download(name, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = name;
+  a.click();
+}
+
+// ════════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════════
+function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+
+// Set default date
+document.getElementById('cfg-date').value = new Date().toISOString().slice(0,16);
+</script>
+</body>
+</html>
