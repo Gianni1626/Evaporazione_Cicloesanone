@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHX Evaporation Test — Industrie Borla REV.2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap');
+:root {
+  --bg:#0d0f12;--bg2:#141720;--bg3:#1c2028;--border:#2a2f3a;
+  --accent:#e8a020;--blue:#3ab0f0;--ok:#40d080;--danger:#e84040;
+  --text:#c8cdd8;--dim:#606878;
+  --mono:'Share Tech Mono',monospace;--cond:'Barlow Condensed',sans-serif;--body:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh}
+header{background:var(--bg2);border-bottom:2px solid var(--accent);padding:0 28px;height:54px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--cond);font-weight:900;font-size:17px;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
+.logo span{color:var(--dim);font-weight:300}
+.rev{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.page{display:none;max-width:860px;margin:0 auto;padding:32px 20px 80px}
+.page.active{display:block}
+h2{font-family:var(--cond);font-weight:900;font-size:22px;letter-spacing:1px;color:#fff;margin-bottom:4px}
+.sub{font-size:13px;color:var(--dim);margin-bottom:24px;line-height:1.6}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:22px;margin-bottom:18px}
+.card-title{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.row{display:grid;gap:14px;margin-bottom:14px}
+.r3{grid-template-columns:1fr 1fr 1fr}
+.r2{grid-template-columns:1fr 1fr}
+label{display:block;font-family:var(--cond);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:15px;padding:10px 12px;border-radius:4px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(58,176,240,.15)}
+input.big{font-size:22px;padding:12px 14px;border-color:var(--accent);color:var(--accent);text-align:center;letter-spacing:2px}
+input.big:focus{box-shadow:0 0 0 3px rgba(232,160,32,.2)}
+input[readonly]{color:var(--blue);border-color:rgba(58,176,240,.3)}
+input.big[readonly]{color:var(--blue);border-color:rgba(58,176,240,.3)}
+.btn{font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;padding:10px 22px;border:none;border-radius:4px;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--accent);color:#111}
+.btn-primary:hover{background:#f0b030}
+.btn-sec{background:transparent;color:var(--blue);border:1px solid var(--blue)}
+.btn-sec:hover{background:rgba(58,176,240,.1)}
+.btn-ok{background:var(--ok);color:#111}
+.btn-ok:hover{background:#50e090}
+.btn-lg{font-size:15px;padding:13px 30px}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+/* steps */
+.steps{display:flex;align-items:center;margin:24px 0 28px}
+.step{display:flex;align-items:center;gap:7px}
+.snum{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;border:1px solid var(--border);color:var(--dim);background:var(--bg2);flex-shrink:0}
+.step.done .snum{background:var(--ok);border-color:var(--ok);color:#111}
+.step.active .snum{background:var(--accent);border-color:var(--accent);color:#111}
+.slabel{font-family:var(--cond);font-size:12px;color:var(--dim);white-space:nowrap}
+.step.active .slabel{color:var(--accent)}
+.step.done .slabel{color:var(--ok)}
+.sline{flex:1;height:1px;background:var(--border);margin:0 6px;min-width:16px}
+/* chrono */
+.chrono{font-family:var(--mono);font-size:60px;color:var(--ok);letter-spacing:6px;text-shadow:0 0 40px rgba(64,208,128,.4);text-align:center;padding:14px 0 6px;line-height:1}
+.chrono-lbl{text-align:center;font-family:var(--cond);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+/* alert */
+.alert{padding:10px 14px;border-radius:4px;font-size:13px;margin-bottom:14px;line-height:1.6}
+.a-info{background:rgba(58,176,240,.1);border:1px solid rgba(58,176,240,.3);color:var(--blue)}
+.a-warn{background:rgba(232,160,32,.1);border:1px solid rgba(232,160,32,.3);color:var(--accent)}
+.a-ok{background:rgba(64,208,128,.1);border:1px solid rgba(64,208,128,.3);color:var(--ok)}
+/* table */
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--cond);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:9px 10px;border-bottom:1px solid rgba(42,47,58,.5);font-family:var(--mono);font-size:12px}
+.t-t{color:var(--blue)}.t-w{color:#fff;font-size:14px}.t-ok{color:var(--ok)}.t-dim{color:var(--dim)}
+@keyframes flash{from{background:rgba(64,208,128,.25)}to{background:transparent}}
+.flash{animation:flash .7s ease}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:14px;text-align:center}
+.stat-v{font-family:var(--mono);font-size:22px;color:var(--accent)}
+.stat-l{font-family:var(--cond);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-top:4px}
+/* chart */
+.chart-box{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:18px}
+.chart-box h3{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.chart-wrap{position:relative;height:260px}
+.sbadge{display:inline-block;background:rgba(232,64,64,.15);border:1px solid rgba(232,64,64,.4);color:var(--danger);font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:3px}
+.sbadge.ok{background:rgba(64,208,128,.15);border-color:rgba(64,208,128,.4);color:var(--ok)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@media(max-width:600px){.r3{grid-template-columns:1fr 1fr}.chrono{font-size:40px}}
+
+/* ── STAMPA ── */
+@media print {
+  body { background:#fff !important; color:#000 !important; }
+  header, .btn, .btn-sec, .btn-primary, .btn-ok, .btn-lg,
+  #page-test, #page-volumi, .steps { display:none !important; }
+  .page { display:block !important; max-width:100% !important; padding:10px !important; }
+  #page-analisi { display:block !important; }
+  .card { border:1px solid #ccc !important; background:#fff !important; break-inside:avoid; }
+  .card-title { color:#333 !important; }
+  .stat { border:1px solid #ccc !important; background:#f5f5f5 !important; }
+  .stat-v { color:#333 !important; }
+  .stat-l { color:#666 !important; }
+  th { color:#555 !important; border-bottom:1px solid #ccc !important; }
+  td { color:#222 !important; border-bottom:1px solid #eee !important; }
+  .t-t { color:#0066aa !important; }
+  .t-ok { color:#006633 !important; }
+  .t-dim { color:#666 !important; }
+  .sbadge { color:#333 !important; border-color:#999 !important; }
+  .sbadge.ok { color:#006633 !important; border-color:#006633 !important; }
+  h2 { color:#000 !important; }
+  .sub { color:#444 !important; }
+  /* nasconde canvas, mostra immagine */
+  canvas { display:none !important; }
+  .chart-print-img { display:block !important; width:100% !important; max-width:100% !important; }
+  .chart-wrap { height:auto !important; }
+  .chart-box { break-inside:avoid; }
+  .a-info,.a-ok,.a-warn { color:#333 !important; border-color:#999 !important; background:#f9f9f9 !important; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Industrie Borla <span>/ Test Evaporazione Cicloesanone</span></div>
+  <div class="rev">REV.2</div>
+</header>
+
+<!-- ═══ PAGE TEST ═══ -->
+<div class="page active" id="page-test">
+
+  <div class="steps" id="steps">
+    <div class="step active" id="st1"><div class="snum">1</div><div class="slabel">Config</div></div>
+    <div class="sline"></div>
+    <div class="step" id="st2"><div class="snum">2</div><div class="slabel">Pesate T=0</div></div>
+    <div class="sline"></div>
+    <div class="step" id="st3"><div class="snum">3</div><div class="slabel">Campionamento</div></div>
+    <div class="sline"></div>
+    <div class="step" id="st4"><div class="snum">4</div><div class="slabel">Analisi</div></div>
+  </div>
+
+  <!-- S1 CONFIG -->
+  <div id="s-config">
+    <h2>Configurazione Test</h2>
+    <p class="sub">Inserisci i parametri generali prima di iniziare.</p>
+    <div class="card">
+      <div class="card-title">Identificazione</div>
+      <div class="row r3">
+        <div><label>ID Test</label><input id="cfg-id" value="CHX-2024-001"></div>
+        <div><label>Operatore</label><input id="cfg-op" placeholder="Nome"></div>
+        <div><label>Articolo</label><input id="cfg-art" placeholder="ART-0042"></div>
+      </div>
+      <div class="row r3">
+        <div><label>Materiale A</label><input id="cfg-mA" placeholder="es. ABS"></div>
+        <div><label>Materiale B</label><input id="cfg-mB" placeholder="es. ABS"></div>
+        <div><label>Temp. amb. (°C)</label><input id="cfg-temp" type="number" value="20" step="0.1"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Parametri Esperimento</div>
+      <div class="alert a-info">
+        <strong>CHX applicato = Peso T=0 − (Peso A + Peso B)</strong> — determinato gravimetricamente, nessun inserimento manuale.
+      </div>
+      <div class="row r2">
+        <div><label>Tempo Stabile / Prodotto Finito (min)</label><input id="cfg-stable" type="number" value="15" step="0.5" min="0"></div>
+        <div><label>Specifica Trazione (N) — solo nota</label><input id="cfg-traz" type="number" placeholder="es. 50"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="goS2()">Avanti →</button>
+  </div>
+
+  <!-- S2 PESATE -->
+  <div id="s-pesate" style="display:none">
+    <h2>Pesate Iniziali — <span id="lbl-camp" style="color:var(--accent)">C01</span></h2>
+    <p class="sub">
+      ① Pesa <strong>A</strong> e <strong>B</strong> separatamente &nbsp;→&nbsp;
+      ② Dosa il cicloesanone e incolla &nbsp;→&nbsp;
+      ③ Pesa subito <strong>A+B+CHX</strong> come <strong>Peso T=0</strong>.<br>
+      Premi <strong>Enter</strong> sul campo Peso T=0 per confermare e avviare il cronometro.
+    </p>
+    <div class="card">
+      <div class="card-title">Pesate</div>
+      <div class="row r3">
+        <div><label>① Peso Pezzo A (g)</label><input type="number" step="0.001" id="wA" placeholder="0.000" class="big"></div>
+        <div><label>② Peso Pezzo B (g)</label><input type="number" step="0.001" id="wB" placeholder="0.000" class="big"></div>
+        <div><label>Somma A+B — calcolata</label><input id="wSum" class="big" readonly tabindex="-1"></div>
+      </div>
+      <div class="row r2">
+        <div>
+          <label>③ Peso T=0 (A+B+CHX) — <strong style="color:var(--accent)">Enter per avviare</strong></label>
+          <input type="number" step="0.001" id="wT0" placeholder="0.000" class="big">
+        </div>
+        <div><label>CHX applicato = T0 − (A+B)</label><input id="chxVal" class="big" readonly tabindex="-1"></div>
+      </div>
+      <div id="p-alert"></div>
+    </div>
+  </div>
+
+  <!-- S3 CAMPIONAMENTO -->
+  <div id="s-camp" style="display:none">
+    <h2>Campionamento — <span id="lbl-camp2" style="color:var(--ok)">C01</span></h2>
+    <div class="card" style="padding:14px 22px">
+      <div class="chrono" id="crono">00:00:00</div>
+      <div class="chrono-lbl">tempo da T=0</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Riepilogo campione</div>
+      <div class="row r3">
+        <div><label>Peso T=0 (g)</label><input id="inf-wT0" readonly tabindex="-1"></div>
+        <div><label>CHX applicato (g)</label><input id="inf-chx" readonly tabindex="-1" style="color:var(--accent)"></div>
+        <div><label>Tempo stabile</label><input id="inf-stable" readonly tabindex="-1" style="color:var(--danger)"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Inserisci peso bilancia → <strong>Enter</strong> per registrare</div>
+      <div style="display:flex;gap:12px;align-items:flex-end">
+        <div style="flex:1"><label>Peso attuale (g)</label><input type="number" step="0.001" id="inp-w" placeholder="0.000" class="big"></div>
+        <div style="padding-bottom:2px"><button class="btn btn-sec" onclick="regPeso()" style="height:52px;padding:0 20px;font-size:14px">⊕ Registra</button></div>
+      </div>
+    </div>
+    <div class="card" id="card-ltt" style="display:none">
+      <div class="card-title">Letture — <span id="n-ltt">0</span></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>#</th><th>T (min)</th><th>Peso (g)</th><th>CHX evap. (g)</th><th>% Evap.</th><th>% Residua</th><th>PF</th><th></th></tr></thead>
+          <tbody id="tbody-ltt"></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-ok btn-lg" onclick="fineCamp()">✓ Fine Campionamento</button>
+    </div>
+  </div>
+
+  <!-- S4 SCELTA DOPO FINE -->
+  <div id="s-fine" style="display:none">
+    <h2>Campionamento Completato</h2>
+    <div id="fine-sum" style="margin-bottom:22px"></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      <button class="btn btn-sec btn-lg" onclick="nuovoCamp()">+ Aggiungi Altro Campione</button>
+      <button class="btn btn-primary btn-lg" onclick="goAnalisi()">→ Vai all'Analisi</button>
+    </div>
+  </div>
+
+</div><!-- /page-test -->
+
+<!-- ═══ PAGE ANALISI ═══ -->
+<div class="page" id="page-analisi">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:22px">
+    <div>
+      <h2>Analisi & Report</h2>
+      <p class="sub" style="margin-bottom:0" id="a-meta"></p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px">
+      <button class="btn btn-sec" onclick="goBackTest()">← Torna</button>
+      <button class="btn btn-sec" onclick="doCSV()">⬇ CSV</button>
+      <button class="btn btn-sec" onclick="preparaPrint();window.print()">🖨 Stampa</button>
+      <button class="btn btn-primary" onclick="goVolumi()">→ Volumi Produzione</button>
+    </div>
+  </div>
+  <div class="stats" id="a-stats"></div>
+  <div class="chart-box"><h3>% CHX Evaporata nel Tempo</h3><div class="chart-wrap"><canvas id="ch-pct"></canvas><img class="chart-print-img" id="ch-pct-img" style="display:none"></div></div>
+  <div class="chart-box"><h3>Peso nel Tempo (g)</h3><div class="chart-wrap"><canvas id="ch-peso"></canvas><img class="chart-print-img" id="ch-peso-img" style="display:none"></div></div>
+  <div id="a-tabelle"></div>
+</div>
+
+<!-- ═══ PAGE VOLUMI ═══ -->
+<div class="page" id="page-volumi">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:22px">
+    <div>
+      <h2>Stima Volumi CHX — Produzione</h2>
+      <p class="sub" style="margin-bottom:0">Calcolo quantità di cicloesanone dosato, evaporato e residuo su base annua / per confezione.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px">
+      <button class="btn btn-sec" onclick="goBackAnalisi()">← Analisi</button>
+      <button class="btn btn-sec" onclick="window.print()">🖨 Stampa</button>
+    </div>
+  </div>
+
+  <div class="alert a-info" id="vol-chx-info" style="margin-bottom:20px"></div>
+
+  <div class="card">
+    <div class="card-title">Dati Produzione</div>
+    <div class="row r2">
+      <div><label>Pezzi prodotti per anno</label><input type="number" id="vol-pezzi-anno" placeholder="es. 100000" min="1" oninput="calcVolumi()"></div>
+      <div><label>Pezzi per scatola (confezione)</label><input type="number" id="vol-pezzi-scatola" placeholder="es. 50" min="1" oninput="calcVolumi()"></div>
+    </div>
+    <div class="row r2">
+      <div><label>Densità CHX (g/ml) — default 0.9478</label><input type="number" id="vol-dens" value="0.9478" step="0.0001" oninput="calcVolumi()"></div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:2px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.5">
+          Cicloesanone: PM 98.14 g/mol<br>d = 0.9478 g/ml a 20°C
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RISULTATI -->
+  <div id="vol-risultati" style="display:none">
+
+    <div class="card">
+      <div class="card-title">Per Singolo Pezzo (medie sperimentali)</div>
+      <div class="stats" id="vol-stats-pezzo"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Volume Annuo — <span id="vol-n-anno-lbl"></span> pezzi/anno</div>
+      <div class="stats" id="vol-stats-anno"></div>
+      <div id="vol-table-anno" style="margin-top:16px;overflow-x:auto"></div>
+    </div>
+
+    <div class="card" id="vol-card-scatola">
+      <div class="card-title">Per Confezione (scatola) — <span id="vol-n-scatola-lbl"></span> pezzi</div>
+      <div class="stats" id="vol-stats-scatola"></div>
+      <div id="vol-table-scatola" style="margin-top:16px;overflow-x:auto"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Riepilogo Riassuntivo</div>
+      <div id="vol-riepilogo"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const S={cfg:{},campioni:[],cur:null,cIdx:0,t0:null,tid:null};
+const COLORS=['#40d080','#3ab0f0','#e8a020','#e84040','#b06af0','#f0d040','#60d0f0','#f07040'];
+
+// ── helpers ──
+const E=id=>document.getElementById(id);
+const V=id=>(E(id)?.value||'').trim();
+const show=id=>{E(id).style.display='block'};
+const hide=id=>{E(id).style.display='none'};
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const pad=n=>String(n).padStart(2,'0');
+function fmtMs(ms){const h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000);return`${pad(h)}:${pad(m)}:${pad(s)}`}
+function setStep(n){[1,2,3,4].forEach(i=>{const el=E('st'+i);el.className='step'+(i<n?' done':i===n?' active':'');});} 
+
+// ── STEP 1 ──
+function goS2(){
+  S.cfg={
+    id:V('cfg-id')||'CHX-TEST',op:V('cfg-op')||'—',art:V('cfg-art')||'—',
+    mA:V('cfg-mA')||'—',mB:V('cfg-mB')||'—',
+    temp:parseFloat(V('cfg-temp'))||20,
+    stable:parseFloat(V('cfg-stable'))||15,
+    traz:parseFloat(V('cfg-traz'))||0,
+    date:new Date().toLocaleString('it-IT')
+  };
+  hide('s-config');show('s-pesate');setStep(2);
+  initNuovoCamp();
+  E('wA').focus();
+}
+
+// ── STEP 2 ──
+function initNuovoCamp(){
+  S.cIdx++;
+  const lbl='C'+String(S.cIdx).padStart(2,'0');
+  S.cur={label:lbl,wA:null,wB:null,wSum:null,wT0:null,chx:null,letture:[]};
+  E('lbl-camp').textContent=lbl;
+  E('lbl-camp2').textContent=lbl;
+  ['wA','wB','wSum','wT0','chxVal'].forEach(id=>E(id).value='');
+  E('p-alert').innerHTML='';
+}
+
+E('wA').addEventListener('input',calcSum);
+E('wB').addEventListener('input',calcSum);
+E('wT0').addEventListener('input',calcCHX);
+E('wT0').addEventListener('keydown',e=>{if(e.key==='Enter')confermaPesate();});
+
+function calcSum(){
+  const a=parseFloat(E('wA').value),b=parseFloat(E('wB').value);
+  E('wSum').value=(!isNaN(a)&&!isNaN(b))?(a+b).toFixed(3):'';
+  calcCHX();
+}
+function calcCHX(){
+  const s=parseFloat(E('wSum').value),t=parseFloat(E('wT0').value);
+  if(!isNaN(s)&&!isNaN(t)){
+    const c=t-s; E('chxVal').value=c.toFixed(3);
+    E('p-alert').innerHTML=c<=0
+      ?'<div class="alert a-warn">⚠ Peso T=0 ≤ somma A+B — controlla i valori.</div>'
+      :`<div class="alert a-ok">✓ CHX applicato: <strong>${c.toFixed(3)} g</strong> — premi <strong>Enter</strong> per confermare e avviare il cronometro.</div>`;
+  }else{E('chxVal').value='';E('p-alert').innerHTML='';}
+}
+
+function confermaPesate(){
+  const wA=parseFloat(E('wA').value),wB=parseFloat(E('wB').value),wT0=parseFloat(E('wT0').value);
+  if(isNaN(wA)||isNaN(wB)||isNaN(wT0)){E('p-alert').innerHTML='<div class="alert a-warn">⚠ Compila tutti i campi di peso.</div>';return;}
+  const wSum=wA+wB,chx=wT0-wSum;
+  if(chx<=0){E('p-alert').innerHTML='<div class="alert a-warn">⚠ CHX negativo — verifica i valori.</div>';return;}
+  Object.assign(S.cur,{wA,wB,wSum,wT0,chx});
+  hide('s-pesate');show('s-camp');setStep(3);
+  E('inf-wT0').value=wT0.toFixed(3);
+  E('inf-chx').value=chx.toFixed(3);
+  E('inf-stable').value=S.cfg.stable+' min';
+  hide('card-ltt');E('tbody-ltt').innerHTML='';E('n-ltt').textContent='0';
+  avviaCrono();
+  E('inp-w').focus();
+}
+
+// ── CRONOMETRO ──
+function avviaCrono(){
+  S.t0=Date.now();
+  if(S.tid)clearInterval(S.tid);
+  S.tid=setInterval(()=>E('crono').textContent=fmtMs(Date.now()-S.t0),200);
+}
+function stopCrono(){clearInterval(S.tid);S.tid=null;}
+function elMin(){return S.t0?(Date.now()-S.t0)/60000:0;}
+
+// ── REGISTRAZIONE ──
+E('inp-w').addEventListener('keydown',e=>{if(e.key==='Enter')regPeso();});
+function regPeso(){
+  const w=parseFloat(E('inp-w').value);
+  if(isNaN(w)){E('inp-w').style.borderColor='var(--danger)';return;}
+  E('inp-w').style.borderColor='';
+  const t=elMin(),chx=S.cur.chx,wT0=S.cur.wT0;
+  const evapG=wT0-w,pctE=chx>0?evapG/chx*100:0,pctR=100-pctE,isStable=t>=S.cfg.stable;
+  S.cur.letture.push({t,w,evapG,pctE,pctR,isStable});
+  renderLtt();
+  E('inp-w').value='';E('inp-w').focus();
+}
+
+function delLtt(i){S.cur.letture.splice(i,1);renderLtt();}
+
+function renderLtt(){
+  const ltt=S.cur.letture;
+  E('n-ltt').textContent=ltt.length+' lettur'+(ltt.length===1?'a':'e');
+  E('card-ltt').style.display=ltt.length?'':'none';
+  const sorted=[...ltt].sort((a,b)=>a.t-b.t);
+  E('tbody-ltt').innerHTML=sorted.map((r,i)=>`<tr class="flash">
+    <td class="t-dim">${i+1}</td>
+    <td class="t-t">${r.t.toFixed(2)}′</td>
+    <td class="t-w">${r.w.toFixed(3)}</td>
+    <td>${r.evapG.toFixed(3)}</td>
+    <td class="t-ok">${r.pctE.toFixed(1)}%</td>
+    <td class="t-dim">${r.pctR.toFixed(1)}%</td>
+    <td>${r.isStable?'<span class="sbadge ok">PF ✓</span>':'<span class="sbadge">—</span>'}</td>
+    <td><button onclick="delLtt(${i})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:13px">✕</button></td>
+  </tr>`).join('');
+}
+
+// ── FINE CAMPIONAMENTO ──
+function fineCamp(){
+  if(!S.cur.letture.length){alert('Nessuna lettura registrata.');return;}
+  stopCrono();
+  S.campioni.push(JSON.parse(JSON.stringify(S.cur)));
+  hide('s-camp');show('s-fine');setStep(4);
+  const c=S.cur,last=c.letture[c.letture.length-1];
+  const atS=c.letture.find(r=>r.t>=S.cfg.stable);
+  E('fine-sum').innerHTML=`<div class="alert a-ok">
+    <strong>${c.label}</strong> — ${c.letture.length} letture registrate.<br>
+    CHX applicato: <strong>${c.chx.toFixed(3)} g</strong><br>
+    Ultima lettura (T=${last.t.toFixed(2)}′): evaporato <strong>${last.pctE.toFixed(1)}%</strong>, residuo ${last.pctR.toFixed(1)}%<br>
+    ${atS?`Al tempo stabile (${S.cfg.stable}′): evap. <strong>${atS.pctE.toFixed(1)}%</strong> / residuo <strong>${atS.pctR.toFixed(1)}%</strong>`
+         :`<span style="color:var(--accent)">⚠ Nessuna lettura al/dopo il tempo stabile (${S.cfg.stable}′)</span>`}
+  </div>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:8px">
+    Campioni completati: ${S.campioni.map(x=>x.label).join(' · ')}
+  </div>`;
+}
+
+function nuovoCamp(){hide('s-fine');show('s-pesate');setStep(2);initNuovoCamp();E('wA').focus();}
+
+// ── ANALISI ──
+let chPct=null,chPeso=null;
+
+function goAnalisi(){
+  if(!S.campioni.length){alert('Nessun campione.');return;}
+  // Prima nascondo test, mostro analisi, poi costruisco (canvas deve essere visibile)
+  hide('page-test');
+  show('page-analisi');
+  // setTimeout garantisce che il browser abbia fatto il layout prima che Chart.js misuri il canvas
+  setTimeout(buildAnalisi, 50);
+}
+function goBackTest(){hide('page-analisi');show('page-test');}
+
+function buildAnalisi(){
+  const cfg=S.cfg, camp=S.campioni;
+
+  E('a-meta').textContent=`${cfg.id} | ${cfg.op} | ${cfg.art} | ${cfg.mA}/${cfg.mB} | ${cfg.temp}°C | ${cfg.date} | T.stabile: ${cfg.stable}′`;
+
+  // ── stat boxes ──
+  const pctStable=[], pctFinal=[];
+  camp.forEach(c=>{
+    const s=c.letture.find(r=>r.t>=cfg.stable);
+    if(s) pctStable.push(s.pctE);
+    if(c.letture.length) pctFinal.push(c.letture[c.letture.length-1].pctE);
+  });
+  const avgChx=avg(camp.map(c=>c.chx));
+  const avgS=pctStable.length?avg(pctStable):null;
+  const avgF=pctFinal.length?avg(pctFinal):null;
+
+  E('a-stats').innerHTML=`
+    <div class="stat"><div class="stat-v">${camp.length}</div><div class="stat-l">Campioni</div></div>
+    <div class="stat"><div class="stat-v">${avgChx.toFixed(3)}</div><div class="stat-l">CHX medio (g)</div></div>
+    <div class="stat"><div class="stat-v">${avgS!==null?avgS.toFixed(1)+'%':'—'}</div><div class="stat-l">% Evap @ Stabile</div></div>
+    <div class="stat"><div class="stat-v">${avgS!==null?(100-avgS).toFixed(1)+'%':'—'}</div><div class="stat-l">% Residuo @ Stabile</div></div>
+    <div class="stat"><div class="stat-v">${avgF!==null?avgF.toFixed(1)+'%':'—'}</div><div class="stat-l">% Evap. Finale</div></div>
+  `;
+
+  // ── tabelle per campione (costruite PRIMA dei grafici) ──
+  E('a-tabelle').innerHTML=camp.map(c=>{
+    const rows=[...c.letture].sort((a,b)=>a.t-b.t);
+    return`<div class="card">
+      <div class="card-title">${c.label} &nbsp;|&nbsp; W(A)=${c.wA.toFixed(3)} g &nbsp; W(B)=${c.wB.toFixed(3)} g &nbsp; W(T=0)=${c.wT0.toFixed(3)} g &nbsp; CHX=${c.chx.toFixed(3)} g</div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>#</th><th>T (min)</th><th>Peso (g)</th><th>CHX evap (g)</th><th>% Evap.</th><th>% Residua</th><th>PF</th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr>
+          <td class="t-dim">${i+1}</td>
+          <td class="t-t">${r.t.toFixed(2)}′</td>
+          <td class="t-w">${r.w.toFixed(3)}</td>
+          <td>${r.evapG.toFixed(3)}</td>
+          <td class="t-ok">${r.pctE.toFixed(1)}%</td>
+          <td class="t-dim">${r.pctR.toFixed(1)}%</td>
+          <td>${r.isStable?'<span class="sbadge ok">PF ✓</span>':'<span class="sbadge">—</span>'}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+  }).join('');
+
+  // ── distruggi grafici vecchi ──
+  if(chPct){ chPct.destroy(); chPct=null; }
+  if(chPeso){ chPeso.destroy(); chPeso=null; }
+
+  // Raccoglie tutti i tempi unici ordinati
+  const allT=[...new Set(camp.flatMap(c=>c.letture.map(r=>parseFloat(r.t.toFixed(2)))))].sort((a,b)=>a-b);
+  const tLabels=allT.map(t=>t.toFixed(2));
+
+  const dsPct=[], dsPeso=[];
+  // Mappe per calcolo media
+  const sumPct={}, sumPeso={}, cntPct={}, cntPeso={};
+
+  camp.forEach((c,ci)=>{
+    const col=COLORS[ci%COLORS.length];
+    const mapPct={}, mapPeso={};
+    c.letture.forEach(r=>{
+      const tk=parseFloat(r.t.toFixed(2)).toFixed(2);
+      mapPct[tk]=parseFloat(r.pctE.toFixed(2));
+      mapPeso[tk]=parseFloat(r.w.toFixed(3));
+      sumPct[tk]=(sumPct[tk]||0)+parseFloat(r.pctE.toFixed(2));
+      cntPct[tk]=(cntPct[tk]||0)+1;
+      sumPeso[tk]=(sumPeso[tk]||0)+parseFloat(r.w.toFixed(3));
+      cntPeso[tk]=(cntPeso[tk]||0)+1;
+    });
+    dsPct.push({
+      label:c.label,
+      data:allT.map(t=>mapPct[t.toFixed(2)]??null),
+      borderColor:col, backgroundColor:'transparent',
+      tension:.4, cubicInterpolationMode:'monotone',
+      fill:false,
+      pointRadius:5, pointHoverRadius:8,
+      borderWidth:2.5, spanGaps:true,
+    });
+    dsPeso.push({
+      label:c.label,
+      data:allT.map(t=>mapPeso[t.toFixed(2)]??null),
+      borderColor:col, backgroundColor:'transparent',
+      tension:.4, cubicInterpolationMode:'monotone',
+      pointRadius:5, pointHoverRadius:8, borderWidth:2.5, spanGaps:true,
+    });
+  });
+
+  // Curva media (solo se >1 campione)
+  if(camp.length>1){
+    const avgPctData=allT.map(t=>{
+      const k=t.toFixed(2);
+      return cntPct[k]?parseFloat((sumPct[k]/cntPct[k]).toFixed(2)):null;
+    });
+    const avgPesoData=allT.map(t=>{
+      const k=t.toFixed(2);
+      return cntPeso[k]?parseFloat((sumPeso[k]/cntPeso[k]).toFixed(3)):null;
+    });
+    dsPct.push({
+      label:'Media',
+      data:avgPctData,
+      borderColor:'#ffffff', backgroundColor:'rgba(255,255,255,.08)',
+      tension:.4, cubicInterpolationMode:'monotone',
+      fill:false,
+      pointRadius:5, pointHoverRadius:9,
+      borderWidth:3,
+      borderDash:[8,4],
+      spanGaps:true,
+    });
+    dsPeso.push({
+      label:'Media',
+      data:avgPesoData,
+      borderColor:'#ffffff', backgroundColor:'transparent',
+      tension:.4, cubicInterpolationMode:'monotone',
+      pointRadius:5, borderWidth:3,
+      borderDash:[8,4], spanGaps:true,
+    });
+  }
+
+  const mkOpts=(yLabel, yMin)=>({
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:'#c8cdd8', font:{size:12}}},
+      tooltip:{
+        callbacks:{
+          title:items=>`T = ${items[0].label}′`,
+          afterBody:items=>parseFloat(items[0].label)>=cfg.stable?['','★ Prodotto Finito']:[]
+        }
+      }
+    },
+    scales:{
+      x:{
+        title:{display:true, text:'Tempo (min)', color:'#606878'},
+        ticks:{color:'#606878', font:{size:11}, maxRotation:0},
+        grid:{color:'rgba(42,47,58,.9)'}
+      },
+      y:{
+        title:{display:true, text:yLabel, color:'#606878'},
+        ticks:{color:'#606878', font:{size:11}},
+        grid:{color:'rgba(42,47,58,.9)'},
+        ...(yMin!==undefined?{min:yMin}:{})
+      }
+    }
+  });
+
+  chPct=new Chart(E('ch-pct').getContext('2d'),
+    {type:'line', data:{labels:tLabels, datasets:dsPct}, options:mkOpts('% CHX Evaporata',0)});
+  chPeso=new Chart(E('ch-peso').getContext('2d'),
+    {type:'line', data:{labels:tLabels, datasets:dsPeso}, options:mkOpts('Peso (g)')});
+}
+
+// ── STAMPA: converti canvas → img prima di stampare ──
+function preparaPrint(){
+  if(chPct){
+    E('ch-pct-img').src=chPct.toBase64Image('image/png',1);
+    E('ch-pct-img').style.display='block';
+  }
+  if(chPeso){
+    E('ch-peso-img').src=chPeso.toBase64Image('image/png',1);
+    E('ch-peso-img').style.display='block';
+  }
+}
+function doAfterPrint(){
+  E('ch-pct-img').style.display='none';
+  E('ch-peso-img').style.display='none';
+}
+window.addEventListener('beforeprint', preparaPrint);
+window.addEventListener('afterprint',  doAfterPrint);
+
+// ── VOLUMI ──
+function goVolumi(){
+  hide('page-analisi');
+  show('page-volumi');
+  // Prepopola info CHX medio
+  const camp=S.campioni;
+  if(!camp.length) return;
+  const avgChx=avg(camp.map(c=>c.chx));
+  const cfg=S.cfg;
+
+  // Calcola medie sperimentali
+  const pctStable=[], pctFinal=[];
+  camp.forEach(c=>{
+    const s=c.letture.find(r=>r.t>=cfg.stable);
+    if(s) pctStable.push(s.pctE);
+    if(c.letture.length) pctFinal.push(c.letture[c.letture.length-1].pctE);
+  });
+  const avgPctStable = pctStable.length ? avg(pctStable) : null;
+  const avgPctFinal  = pctFinal.length  ? avg(pctFinal)  : null;
+
+  E('vol-chx-info').innerHTML=
+    `CHX medio applicato per pezzo: <strong>${avgChx.toFixed(4)} g</strong> &nbsp;|&nbsp; `+
+    `Evaporato a T.stabile (${cfg.stable}′): <strong>${avgPctStable!==null?avgPctStable.toFixed(1)+'%':'—'}</strong> &nbsp;|&nbsp; `+
+    `Evaporato a fine test: <strong>${avgPctFinal!==null?avgPctFinal.toFixed(1)+'%':'—'}</strong>`;
+
+  calcVolumi();
+}
+
+function goBackAnalisi(){hide('page-volumi');show('page-analisi');}
+
+function calcVolumi(){
+  const camp=S.campioni, cfg=S.cfg;
+  if(!camp.length) return;
+
+  const nAnno   = parseInt(E('vol-pezzi-anno').value)||0;
+  const nScatola= parseInt(E('vol-pezzi-scatola').value)||0;
+  const dens    = parseFloat(E('vol-dens').value)||0.9478;
+
+  // Medie sperimentali per pezzo
+  const avgChxG = avg(camp.map(c=>c.chx)); // g CHX dosato per pezzo
+
+  // % evaporate: a T.stabile e a fine test
+  const pctAtStable=[], pctAtEnd=[];
+  camp.forEach(c=>{
+    const s=c.letture.find(r=>r.t>=cfg.stable);
+    if(s) pctAtStable.push(s.pctE);
+    if(c.letture.length) pctAtEnd.push(c.letture[c.letture.length-1].pctE);
+  });
+  const avgPctStable = pctAtStable.length ? avg(pctAtStable)/100 : null;
+  const avgPctEnd    = pctAtEnd.length    ? avg(pctAtEnd)/100    : null;
+
+  // Per pezzo
+  const chxDosatoG    = avgChxG;
+  const chxEvapStabG  = avgPctStable!==null ? avgChxG*avgPctStable : null;  // evaporato 0→T.stabile
+  const chxResiduoG   = avgPctStable!==null ? avgChxG*(1-avgPctStable) : null; // residuo nel pezzo a T.stabile
+  const chxEvapFineG  = avgPctEnd!==null    ? avgChxG*avgPctEnd    : null;  // evaporato totale a fine
+  const chxResFineG   = avgPctEnd!==null    ? avgChxG*(1-avgPctEnd): null;  // residuo assoluto a fine
+
+  // g → litri: g / (dens g/ml * 1000 ml/L)
+  const gToL = g => g / (dens * 1000);
+  const fmt4 = v => v!==null ? v.toFixed(4) : '—';
+  const fmtL = v => v!==null ? gToL(v).toFixed(6) : '—';
+  const fmtmL= v => v!==null ? (gToL(v)*1000).toFixed(4) : '—';
+
+  // Stat pezzo
+  E('vol-stats-pezzo').innerHTML=`
+    <div class="stat"><div class="stat-v">${fmt4(chxDosatoG)}</div><div class="stat-l">CHX dosato (g)</div></div>
+    <div class="stat"><div class="stat-v">${fmtmL(chxDosatoG)}</div><div class="stat-l">CHX dosato (ml)</div></div>
+    <div class="stat"><div class="stat-v">${fmt4(chxEvapStabG)}</div><div class="stat-l">Evap. 0→T.stab. (g)</div></div>
+    <div class="stat"><div class="stat-v">${fmtmL(chxEvapStabG)}</div><div class="stat-l">Evap. 0→T.stab. (ml)</div></div>
+    <div class="stat"><div class="stat-v">${fmt4(chxResiduoG)}</div><div class="stat-l">Residuo @ T.stab. (g)</div></div>
+    <div class="stat"><div class="stat-v">${fmtmL(chxResiduoG)}</div><div class="stat-l">Residuo @ T.stab. (ml)</div></div>
+    <div class="stat"><div class="stat-v">${fmt4(chxEvapFineG)}</div><div class="stat-l">Evap. totale (g)</div></div>
+    <div class="stat"><div class="stat-v">${fmt4(chxResFineG)}</div><div class="stat-l">Residuo finale (g)</div></div>
+  `;
+
+  if(!nAnno && !nScatola){ hide('vol-risultati'); return; }
+  show('vol-risultati');
+
+  // Helper tabella voce
+  const mkRow=(label, gVal)=>{
+    if(gVal===null) return `<tr><td>${label}</td><td class="t-dim">—</td><td class="t-dim">—</td><td class="t-dim">—</td></tr>`;
+    const ml=gToL(gVal)*1000, li=gToL(gVal);
+    return `<tr><td>${label}</td><td class="t-ok">${gVal.toFixed(3)}</td><td>${ml.toFixed(3)}</td><td class="t-acc">${li.toFixed(6)}</td></tr>`;
+  };
+  const mkTable=(n)=>{
+    const D=v=>v!==null?v*n:null;
+    return`<table><thead><tr><th>Voce</th><th>Grammi (g)</th><th>Millilitri (ml)</th><th>Litri (L)</th></tr></thead><tbody>
+      ${mkRow('CHX dosato totale', D(chxDosatoG))}
+      ${mkRow(`Evaporato 0 → T.stabile (${cfg.stable}′)`, D(chxEvapStabG))}
+      ${mkRow(`Residuo nel pezzo a T.stabile`, D(chxResiduoG))}
+      ${mkRow('Evaporato totale (fine test)', D(chxEvapFineG))}
+      ${mkRow('Residuo assoluto fine test', D(chxResFineG))}
+    </tbody></table>`;
+  };
+
+  if(nAnno){
+    E('vol-n-anno-lbl').textContent=nAnno.toLocaleString('it-IT');
+    E('vol-stats-anno').innerHTML=`
+      <div class="stat"><div class="stat-v">${(gToL(chxDosatoG*nAnno)).toFixed(3)}</div><div class="stat-l">CHX dosato tot. (L/anno)</div></div>
+      <div class="stat"><div class="stat-v">${chxEvapStabG!==null?(gToL(chxEvapStabG*nAnno)).toFixed(3):'—'}</div><div class="stat-l">Evap. 0→stab. (L/anno)</div></div>
+      <div class="stat"><div class="stat-v">${chxResiduoG!==null?(gToL(chxResiduoG*nAnno)).toFixed(3):'—'}</div><div class="stat-l">Residuo@stab. (L/anno)</div></div>
+      <div class="stat"><div class="stat-v">${chxEvapFineG!==null?(gToL(chxEvapFineG*nAnno)).toFixed(3):'—'}</div><div class="stat-l">Evap. totale (L/anno)</div></div>
+    `;
+    E('vol-table-anno').innerHTML=mkTable(nAnno);
+  }
+
+  if(nScatola){
+    E('vol-n-scatola-lbl').textContent=nScatola.toLocaleString('it-IT');
+    E('vol-card-scatola').style.display='block';
+    E('vol-stats-scatola').innerHTML=`
+      <div class="stat"><div class="stat-v">${(gToL(chxDosatoG*nScatola)*1000).toFixed(3)}</div><div class="stat-l">CHX dosato tot. (ml/scatola)</div></div>
+      <div class="stat"><div class="stat-v">${chxEvapStabG!==null?(gToL(chxEvapStabG*nScatola)*1000).toFixed(3):'—'}</div><div class="stat-l">Evap. 0→stab. (ml/scatola)</div></div>
+      <div class="stat"><div class="stat-v">${chxResiduoG!==null?(gToL(chxResiduoG*nScatola)*1000).toFixed(3):'—'}</div><div class="stat-l">Residuo@stab. (ml/scatola)</div></div>
+      <div class="stat"><div class="stat-v">${chxEvapFineG!==null?(gToL(chxEvapFineG*nScatola)*1000).toFixed(3):'—'}</div><div class="stat-l">Evap. totale (ml/scatola)</div></div>
+    `;
+    E('vol-table-scatola').innerHTML=mkTable(nScatola);
+  } else {
+    E('vol-card-scatola').style.display='none';
+  }
+
+  // Riepilogo testo
+  const nScatoleAnno = nAnno&&nScatola ? Math.ceil(nAnno/nScatola) : null;
+  E('vol-riepilogo').innerHTML=`
+    <table><tbody>
+      <tr><td style="color:var(--dim);width:320px">Articolo</td><td class="t-acc">${cfg.art}</td></tr>
+      <tr><td style="color:var(--dim)">Pezzi / anno</td><td>${nAnno?nAnno.toLocaleString('it-IT'):'—'}</td></tr>
+      <tr><td style="color:var(--dim)">Pezzi / scatola</td><td>${nScatola?nScatola.toLocaleString('it-IT'):'—'}</td></tr>
+      ${nScatoleAnno?`<tr><td style="color:var(--dim)">Scatole / anno</td><td>${nScatoleAnno.toLocaleString('it-IT')}</td></tr>`:''}
+      <tr><td style="color:var(--dim)">CHX medio / pezzo</td><td>${avgChxG.toFixed(4)} g &nbsp;= ${(gToL(avgChxG)*1000).toFixed(4)} ml</td></tr>
+      <tr><td style="color:var(--dim)">Densità CHX usata</td><td>${dens} g/ml</td></tr>
+      <tr><td style="color:var(--dim)">Tempo stabile (PF)</td><td>${cfg.stable} min</td></tr>
+      ${nAnno?`<tr><td style="color:var(--dim)">CHX dosato totale/anno</td><td class="t-ok"><strong>${(chxDosatoG*nAnno/1000).toFixed(3)} kg &nbsp;= ${gToL(chxDosatoG*nAnno).toFixed(3)} L</strong></td></tr>`:''}
+      ${nAnno&&chxEvapStabG!==null?`<tr><td style="color:var(--dim)">Evaporato (0→T.stabile)/anno</td><td><strong>${(chxEvapStabG*nAnno/1000).toFixed(3)} kg &nbsp;= ${gToL(chxEvapStabG*nAnno).toFixed(3)} L</strong></td></tr>`:''}
+      ${nAnno&&chxResiduoG!==null?`<tr><td style="color:var(--dim)">Residuo nel pezzo @T.stabile/anno</td><td><strong>${(chxResiduoG*nAnno/1000).toFixed(3)} kg &nbsp;= ${gToL(chxResiduoG*nAnno).toFixed(3)} L</strong></td></tr>`:''}
+    </tbody></table>
+  `;
+}
+
+// ── CSV ──
+function doCSV(){
+  let csv='Campione,WA_g,WB_g,WSum_g,CHX_g,WT0_g,T_min,Peso_g,CHX_evap_g,Pct_evap,Pct_residua,PF\n';
+  S.campioni.forEach(c=>[...c.letture].sort((a,b)=>a.t-b.t).forEach(r=>{
+    csv+=`${c.label},${c.wA.toFixed(3)},${c.wB.toFixed(3)},${c.wSum.toFixed(3)},${c.chx.toFixed(3)},${c.wT0.toFixed(3)},${r.t.toFixed(3)},${r.w.toFixed(3)},${r.evapG.toFixed(3)},${r.pctE.toFixed(2)},${r.pctR.toFixed(2)},${r.isStable?'SI':'NO'}\n`;
+  }));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=(S.cfg.id||'CHX')+'_dati.csv';a.click();
+}
+</script>
+</body>
+</html>
